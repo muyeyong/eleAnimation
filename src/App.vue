@@ -1,28 +1,25 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Elem />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import './utils/lib-flexible-2.0/index'
+import Elem from './components'
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Elem
   }
 }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang='less' > 
+@import '/css/normalize.css';
+#app{
+  margin: 0 auto;
+  max-width: 10rem;
+  min-width: 4.266667rem;
 }
 </style>
