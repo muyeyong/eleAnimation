@@ -4,33 +4,35 @@
       <h1>饿了么动画效果演示</h1>
     </header>
     <section class="main">
-      <section class="foodMenu">
+      <section class="foodMenu" id="foodMenu" ref="foodMenu">
         <ul>
-          <li v-for="(item,index) in foods" :key="index">
+          <li v-for="(item,index) in foods" :key="index" :class="index=== activeMenuIndex? 'activeMenu':''">
             {{item.menuName}}
           </li>
         </ul>
       </section>
-      <section class="foodList">
-        <ul v-for="(item,index) in foods" :key="index">
-          <span class="menuName">{{item.menuName}}</span>
-          <li v-for="(food,foodIndex) in item.menuList" :key="foodIndex">
-            {{food.name}}
-            <section class="operation">
-              <transition name="showReduce">
-                 <span @click="removeCar(item.menuName,foodIndex)" v-if="food.count">
-                  <svg-icon class="reduce_icon" icon-class="reduce" ></svg-icon>
+      <section class="foodList" id="foodList" ref="foodList">
+        <div class="foodList_wrap">
+          <ul v-for="(item,index) in foods" :key="index">
+            <span class="menuName">{{item.menuName}}</span>
+            <li v-for="(food,foodIndex) in item.menuList" :key="foodIndex">
+              {{food.name}}
+              <section class="operation">
+                <transition name="showReduce">
+                  <span @click="removeCar(item.menuName,foodIndex)" v-if="food.count">
+                    <svg-icon class="reduce_icon" icon-class="reduce" ></svg-icon>
+                  </span>
+                </transition>
+                <transition name="fade">
+                  <span v-if="food.count">{{food.count}}</span>
+                </transition>
+                <span @click="addCar(item.menuName,foodIndex)">
+                    <svg-icon class="add_icon" icon-class="add" ></svg-icon>
                 </span>
-              </transition>
-              <transition name="fade">
-                <span v-if="food.count">{{food.count}}</span>
-              </transition>
-              <span @click="addCar(item.menuName,foodIndex)">
-                  <svg-icon class="add_icon" icon-class="add" ></svg-icon>
-              </span>
-            </section>
-          </li>
-        </ul>
+              </section>
+            </li>
+          </ul>
+        </div>
       </section>
     </section>
     <footer class="footer">
@@ -46,14 +48,56 @@
 
 <script>
 import {foods} from '../../mockData/index'
+import {findLastLessValue} from '../../tools/array'
+import BScroll from  'better-scroll'
+
 export default {
   name: 'elem',
   data(){
     return {
-      foods:foods
+      foods:foods,
+      foodsLisTop: [], //食品大类距离顶部的距离
+      foodScroll: null,
+      activeMenuIndex: 0,
     }
   },
+  mounted(){
+    this.getFoodListHeight()
+  },
   methods:{
+    getFoodListHeight(){
+      let foodListContainer = this.$refs.foodList
+      if(foodListContainer){
+        let listArr = Array.from(foodListContainer.children[0].children)
+        listArr.forEach((item,index)=>{
+          this.foodsLisTop[index] = item.offsetTop
+        })
+        this.listenScroll(foodListContainer)
+      }
+    },
+    listenScroll(element){
+      this.foodScroll = new BScroll(element,{
+          probeType: 3,
+          deceleration: 0.001,
+          bounce: false,
+          swipeTime: 2000,
+          click: true,
+      })
+      const menuScroll = new BScroll('#foodMenu',{
+        click: true,
+      })
+      const menuHeight = this.$refs.foodMenu.clientHeight
+      this.foodScroll.on('scroll', pos=>{
+        if(!this.$refs.foodMenu) return
+        const targetIndex = findLastLessValue(this.foodsLisTop,Math.abs(Math.round(pos.y)))
+        
+        if(targetIndex !== -1){
+          this.activeMenuIndex = targetIndex
+          const nextMenu = this.$refs.foodMenu.querySelectorAll('.activeMenu')[0]
+          menuScroll.scrollToElement(nextMenu, 800, 0, -(menuHeight/2 - 50))
+        }
+      })
+    },
     removeCar(fatherName,childIndex){
       let target = this.foods.find(item => item.menuName ===  fatherName)
       if(target){
@@ -118,6 +162,9 @@ li{
           white-space: nowrap;
           text-overflow: ellipsis;
           padding-left: 0.133333rem;
+        }
+        .activeMenu{
+          border-left: 0.04rem solid #529bda;
         }
       }
     }
