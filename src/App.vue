@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <Elem />
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
 import './utils/lib-flexible-2.0/index'
-import Elem from './components'
+// import Elem from './components'
 export default {
   name: 'App',
   components: {
-    Elem
+    
   }
 }
 </script>
