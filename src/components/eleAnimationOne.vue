@@ -223,7 +223,6 @@ li{
   }
 }
 .wrap{
-  width: 100%;
   background: #529bda;
   .header{
     position: static;
@@ -243,6 +242,8 @@ li{
     display: flex;
     overflow: hidden;
     width: 100%;
+    max-width: 10rem;
+    min-width: 4.266667rem;
     .foodMenu{
       flex: 2;
       overflow: auto;
@@ -308,6 +309,8 @@ li{
     width: 100%;
     height: 1.333333rem;
     background: rgb(61, 61, 63);
+    max-width: 10rem;
+    min-width: 4.266667rem;
     .moveDone{
       animation: carScale 0.5s ease-in-out;
     }

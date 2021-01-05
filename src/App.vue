@@ -6,7 +6,6 @@
 
 <script>
 import './utils/lib-flexible-2.0/index'
-// import Elem from './components'
 export default {
   name: 'App',
   components: {
@@ -16,7 +15,12 @@ export default {
 </script>
 
 <style lang='less' > 
-@import '/css/normalize.css';
+ @import './css/normalize.css';
+  @import './css/base.css';
+  body{
+    background: url("assets/imgs/main_bg.jpg") no-repeat;
+  background-size: 100%;
+  }
 #app{
   margin: 0 auto;
   max-width: 10rem;

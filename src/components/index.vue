@@ -81,6 +81,8 @@ li{
     text-align: center;
     line-height: .666667rem;
     background: slategray;
+    max-width: 10rem;
+    min-width: 4.266667rem;
   }
 }
 
