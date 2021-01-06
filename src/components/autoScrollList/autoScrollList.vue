@@ -27,27 +27,29 @@ export default {
             dir:1,//0上 1下
             listenChildChange: false,//判断是否监听childrenDom变化
             end: false,
+            start: false,
             sliding: false,
             load: false
         }
     },
     watch:{
-        flag:{
+        
+        haveData:{
             handler:(newVal,oldValue)=>{
                 console.log(newVal,oldValue)
             },
             deep: true
         },
-        // end(value){
-        //     if(value){
-                
-        //         this.listenChildChange = false
-        //         console.log('end',value,this.listenChildChange)
-        //     }
-        // }
+        loading:{
+            handler:(newVal,oldVal)=>{
+                console.log(newVal,oldVal)
+            },
+            deep: true
+        }
+       
     },
     mounted(){
-        this.listener()
+        // this.listener()
         this.init()
        
     },
@@ -99,7 +101,7 @@ export default {
                 this.preScrollTop = this.$refs.scroll_wrap.scrollTop
                 // this.$refs.scroll_wrap.innerHTML =""
                 !this.end&&this.$emit('notice',scrollDir.down)
-                if(this.end) this.listenChildChange = false
+                if(this.end || this.start) this.listenChildChange = false
            }else{
                this.$refs.scroll_wrap.scrollTop++
            }
@@ -110,6 +112,7 @@ export default {
        },
        restartScroll(){
            this.sliding = false
+           this.listenChildChange = false
            this.timeInterval = setInterval(()=>{
                //重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
                this.autoScroll()
@@ -124,6 +127,7 @@ export default {
                if(this.isBottom()){
                    if(this.end) return
                    this.listenChildChange = true
+                   this.start = false
                    this.load = true 
                     this.stopScroll()
                     this.dir = scrollDir.down
@@ -132,6 +136,8 @@ export default {
            }else{
                if(this.isTop()){
                    this.end = false //是不是要定义两个截止状态，开始/结束
+                   if(this.start) return 
+                   this.start = true
                    this.listenChildChange = true
                    this.load = true 
                    this.stopScroll()
@@ -154,6 +160,7 @@ export default {
            // eslint-disable-next-line no-debugger
          this.listenChildChange = false
          this.end = false
+         this.start = false
          this.load = false
         //  this.firstNode =  this.$refs.scroll_wrap.children[1]
         //  this.secondNode = this.$refs.scroll_wrap.children[0]
@@ -164,6 +171,9 @@ export default {
         // this.secondNode = this.$refs.scroll_wrap.children[1]
         // 什么时候去删除子节点，会存在下一次请求的数据长度不够的情况 2020/12/29
          if(this.$refs.scroll_wrap.children.length>1){
+             if(this.dir === scrollDir.up){
+                 this.preNode = this.$refs.scroll_wrap.children[0]
+             }
             let index = Array.from(this.$refs.scroll_wrap.children).findIndex(item=> item.innerText.replace(/[\r\n]/g,"") == this.preNode.innerText.replace(/[\r\n]/g,""))
             if(index === -1) index = 0
             this.preOffsetheight = this.$refs.scroll_wrap.children[index].offsetHeight
@@ -185,13 +195,27 @@ export default {
             this.dir = scrollDir.down
             this.$refs.scroll_wrap.insertBefore(this.preNode,null)
             //滑动需要加过渡效果
-            this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
+            this.$refs.scroll_wrap.scrollTop = Math.abs(this.preScrollTop - this.preOffsetheight)
+            this.scrollTo(this.$refs.scroll_wrap,0,2000)
             if(!this.end)this.preNode = this.$refs.scroll_wrap.children[1].cloneNode(true)
+        //      this.sliding = false
+        //    this.listenChildChange = false
+        //    return
         }
         // this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
         // if(!this.end)this.preNode = this.$refs.scroll_wrap.children[1].cloneNode(true)
         this.restartScroll()
-       }
+       },
+        scrollTo(element,to,duration){
+            if(duration<=0) return
+            let difference = to - element.scrollTop
+            let perTick = difference/duration*10
+            setTimeout(()=>{
+                element.scrollTop += perTick
+                if(element.scrollTop === to) return
+                this.scrollTo(element,to,duration-10)
+            },10)
+        }
     }
 }
 </script>

@@ -17,15 +17,21 @@ export default {
     components:{autoScroll},
     data(){
         return {
-            list:['A','B','C','D','E','F'],
+            list:['北京','长沙','岳阳','上海','深圳','杭州'],
             moreData: false,
             firstLoad: true,
             uid:0,
             cityList:[
                 ['北京','长沙','岳阳','上海','深圳','杭州'],
                 ['常州','苏州','常熟','包头','哈佛','菏泽'],
+                ['汉中','辽阳','梧州','燕塘','百色','毕节'],
+                ['天水','酒泉','安康','白山','伊犁','鸡西'],
+                ['锡林郭勒','阿拉善','通化','六盘水','朝阳','阿坝'],
+                ['张家口','阳江','延安','景德镇','乌木木齐','济南'],
                 ['广州','常德','武汉']
-            ]
+            ],
+            startPage:-1,
+            endPage:0
         }
     },
     mounted(){
@@ -34,6 +40,9 @@ export default {
     methods:{
         loadData(type){
             //0 上  1下
+            if(type === scrollDir.up){
+                if(this.startPage<=0) return
+            }
             setTimeout(()=>{
                 this.list = this.getCity(type)
             },1000)
@@ -41,26 +50,19 @@ export default {
         delay(){
 
         },
-        getCity(dir){
+        getCity(type){
             //0 上  1下
-            if(dir=== scrollDir.down){
-                if(!this.firstLoad&&this.uid<=0) {
-                    this.uid = 2
-                }
-                let target = this.cityList[this.uid%3]
-                // if(this.cityList[(this.uid+1)%3].length>=6)
-                this.uid++
-                this.firstLoad = false
-                return target
-            }else if(dir=== scrollDir.up){
-                if(this.uid >= 3) this.uid = 0
-                else{
-                    this.uid = this.uid-1>0? this.uid-1:this.cityList.length-1
-                }
-                this.firstLoad = false
-                return this.cityList[this.uid%3]
-            }
-            
+            let result 
+           if(type === scrollDir.down){
+               this.endPage++
+               this.startPage++
+               result = this.cityList[this.endPage%this.cityList.length]
+           }else if(type === scrollDir.up){
+                this.endPage = this.endPage-1>0? this.endPage-1 : 0
+                this.startPage = this.startPage-1>-1?this.startPage-1:-1
+               result = this.cityList[(this.startPage>0? this.startPage:0)%this.cityList.length]
+           }
+           return result
         }
     }
 }
