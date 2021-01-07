@@ -1,8 +1,8 @@
 <template>
   <section class="easy_auto_list" 
     :style="{height:height+'px',width:width+'px'}" 
-    @mouseover="stopScroll"
-    @mouseleave="restartScroll"
+    @mouseover="mouseoverEvent"
+    @mouseleave="mouseleaveEvent" 
     @scroll="scrollEvent"
     ref="scroll_wrap"
   >
@@ -14,6 +14,8 @@
 import {scrollDir} from './config'
 export default {
     //需要注意的点：更新的数据的位置 上滑后需要改变状态 
+    //2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
+    // or 加一层判断 stopScroll  restartScroll 不直接调用方法
     name:'autoScroll',
     props:['width','height','haveData','loading','flag'],
     data(){
@@ -30,6 +32,7 @@ export default {
             start: false,
             sliding: false,
             transtionMove: false,
+            canRequest: true
         }
     },
     watch:{
@@ -37,33 +40,35 @@ export default {
             handler:function(newVal){
                 if(newVal){
                     this.$nextTick(()=>{
-                        console.log('数据更新了....')
+                        this.canRequest = true
                         this.updateChildrenNode()
                     })
+                }else{
+                    if(!this.loading)this.canRequest = true
                 }
             },
             deep: true
         },
-        // flag:{
-        //     handler: function(newVal){
-        //         console.log('flag',newVal)
-        //         this.newFlag = newVal
-        //     },
-        //     deep: true
-        // },
+        loading:{
+            handler: function(newVal){
+               if(!newVal){
+                    // this.canRequest = true
+               }
+            },
+            deep: true
+        },
 
     },
     mounted(){
         // this.listener()
         this.init()
-       
     },
     methods:{
        init(){
-        this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
-        this.timeInterval = setInterval(()=>{
-            this.autoScroll()
-        },15)
+            this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
+            this.timeInterval = setInterval(()=>{
+                this.autoScroll()
+            },15)
        },
        autoScroll(){
           // offsetTop 是不变的
@@ -83,7 +88,7 @@ export default {
        restartScroll(){
            this.sliding = false
            this.dir = scrollDir.down
-            this.timeInterval&&clearInterval(this.timeInterval)
+           this.timeInterval&&clearInterval(this.timeInterval)
            this.timeInterval = setInterval(()=>{
                //重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
                this.autoScroll()
@@ -92,12 +97,13 @@ export default {
        //判断滑动方向，是否到底/顶
        scrollEvent(){
            const rootScroll = this.$refs.scroll_wrap
-           if(!this.sliding || this.loading || this.transtionMove) return
+           if(!this.sliding ||  this.transtionMove || !this.canRequest) return
            if(rootScroll.scrollTop - this.preScrollTop>0){
                if(this.isBottom()){
                     this.stopScroll()
                     this.preNode =  this.$refs.scroll_wrap.children.length>1?this.$refs.scroll_wrap.children[1].cloneNode(true) : this.$refs.scroll_wrap.children[0].cloneNode(true)
                     this.dir = scrollDir.down
+                    this.canRequest = false
                     this.$emit('notice',scrollDir.down)
                }
            }else{
@@ -105,6 +111,7 @@ export default {
                     this.stopScroll()
                     this.dir = scrollDir.up
                     this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
+                    this.canRequest = false
                     this.$emit('notice',scrollDir.up)
                }
            }
@@ -144,8 +151,8 @@ export default {
             this.$refs.scroll_wrap.insertBefore(this.preNode,node)
             this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
         }
-       
         this.dir = scrollDir.down
+        // this.canRequest = true
         this.restartScroll()
        },
         scrollTo(element,to,duration){
@@ -175,6 +182,17 @@ export default {
                 this.preOffsetheight = child.offsetHeight
                 parentDom.removeChild(child)
             }
+        },
+        domUpdateDone(){
+            console.log('dom更新完毕了')
+        },
+        mouseoverEvent(){
+            if(!this.canRequest) return
+            this.stopScroll()
+        },
+        mouseleaveEvent(){
+            if(!this.canRequest) return
+            this.restartScroll()
         }
     }
 }

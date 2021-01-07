@@ -2,7 +2,12 @@
   <section class="wrap">
       <header class="header">自动滚动列表</header>
       <section class="bd">
-          <auto-scroll height='200' width='130' @notice='loadData' :haveData='moreData' :loading='loading' :flag='page'>
+          <auto-scroll height='200' width='130' 
+          @notice='loadData' 
+          :haveData='moreData' 
+          :loading='loading' 
+          :flag='page'
+          >
             <ul class="test_scroll" :data-flag='page'>
                 <li v-for="(item,index) in list" :key="index">{{item}}</li>
             </ul>
@@ -34,6 +39,14 @@ export default {
             ],
             startPage:-1,
             endPage:0
+        }
+    },
+    watch:{
+        startPage(value){
+            console.log('startPage',value,this.loading)
+        },
+        endPage(value){
+            console.log('endPage',value)
         }
     },
     mounted(){
@@ -76,10 +89,9 @@ export default {
                result = this.cityList[this.endPage%this.cityList.length]
            }else if(type === scrollDir.up){
                 this.endPage = this.endPage-1>0? this.endPage-1 : 0
-                this.startPage = this.startPage-1>-1?this.startPage-1:-1
+                this.startPage = this.startPage-1>0?this.startPage-1:0
                result = this.cityList[(this.startPage>0? this.startPage:0)%this.cityList.length]
            }
-           console.log('page',this.page)
            return result
         }
     }
