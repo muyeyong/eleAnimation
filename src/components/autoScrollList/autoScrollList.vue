@@ -15,7 +15,7 @@ import {scrollDir} from './config'
 export default {
     //需要注意的点：更新的数据的位置 上滑后需要改变状态 
     name:'autoScroll',
-    props:['width','height','flag'],
+    props:['width','height','haveData','loading','flag'],
     data(){
         return{
             timeInterval: null,
@@ -29,24 +29,29 @@ export default {
             end: false,
             start: false,
             sliding: false,
-            load: false
+            transtionMove: false,
         }
     },
     watch:{
-        
         haveData:{
-            handler:(newVal,oldValue)=>{
-                console.log(newVal,oldValue)
+            handler:function(newVal){
+                if(newVal){
+                    this.$nextTick(()=>{
+                        console.log('数据更新了....')
+                        this.updateChildrenNode()
+                    })
+                }
             },
             deep: true
         },
-        loading:{
-            handler:(newVal,oldVal)=>{
-                console.log(newVal,oldVal)
-            },
-            deep: true
-        }
-       
+        // flag:{
+        //     handler: function(newVal){
+        //         console.log('flag',newVal)
+        //         this.newFlag = newVal
+        //     },
+        //     deep: true
+        // },
+
     },
     mounted(){
         // this.listener()
@@ -54,54 +59,19 @@ export default {
        
     },
     methods:{
-        listener(){
-            // window.addEventListener('scroll', () => {
-            //     // var temp = document.getElementsByClassName('easy_auto_list')
-            //     // console.log(temp[0].scrollTop) // 查看打印的值是否有变化 如果有 则说明滚滚动条在这个标签中
-            //      console.log(this.secondNode.offsetTop)
-            // }, true)
-            const targetNode = this.$refs.scroll_wrap
-            const config = { attributes: true, childList: true, subtree: true };
-            let vueInstance = this
-            const callback = function() {
-               vueInstance.listenChildChange&&vueInstance.updateChildrenNode()
-            // for(let mutation of mutationsList) {
-            //     if (mutation.type === 'childList') {
-            //        if(vueInstance.canChangeNode) vueInstance.updateChildrenNode()
-            //     }
-            //     else if (mutation.type === 'attributes') {
-            //         console.log('The ' + mutation.attributeName + ' attribute was modified.');
-            //     }
-            // }
-        };
-        // 创建一个观察器实例并传入回调函数
-        const observer = new MutationObserver(callback);
-        // 以上述配置开始观察目标节点
-        observer.observe(targetNode, config);
-        },
        init(){
-        //  let cloneNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
-        //  this.$refs.scroll_wrap.appendChild(cloneNode)
-        //  this.firstNode =  this.$refs.scroll_wrap.children[0]
-        //  this.secondNode =  this.$refs.scroll_wrap.children[1]
-        //  console.log(this.secondNode.offsetTop,this.firstNode.offsetHeight)
-        //  console.log('before',)
         this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
-         this.timeInterval = setInterval(()=>{
-             this.autoScroll()
-         },15)
+        this.timeInterval = setInterval(()=>{
+            this.autoScroll()
+        },15)
        },
        autoScroll(){
           // offsetTop 是不变的
            if(this.isBottom()){
-            //  this.$refs.scroll_wrap.scrollTop -= this.firstNode.offsetHeight
-                this.listenChildChange = true
-                this.load = true 
                 this.stopScroll()
                 this.preScrollTop = this.$refs.scroll_wrap.scrollTop
-                // this.$refs.scroll_wrap.innerHTML =""
-                !this.end&&this.$emit('notice',scrollDir.down)
-                if(this.end || this.start) this.listenChildChange = false
+                this.preNode =  this.$refs.scroll_wrap.children.length>1?this.$refs.scroll_wrap.children[1].cloneNode(true) : this.$refs.scroll_wrap.children[0].cloneNode(true)
+               this.$emit('notice',scrollDir.down)
            }else{
                this.$refs.scroll_wrap.scrollTop++
            }
@@ -112,7 +82,8 @@ export default {
        },
        restartScroll(){
            this.sliding = false
-           this.listenChildChange = false
+           this.dir = scrollDir.down
+            this.timeInterval&&clearInterval(this.timeInterval)
            this.timeInterval = setInterval(()=>{
                //重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
                this.autoScroll()
@@ -121,100 +92,89 @@ export default {
        //判断滑动方向，是否到底/顶
        scrollEvent(){
            const rootScroll = this.$refs.scroll_wrap
-           if(!this.sliding || this.listenChildChange) return
-            //向上滑
+           if(!this.sliding || this.loading || this.transtionMove) return
            if(rootScroll.scrollTop - this.preScrollTop>0){
                if(this.isBottom()){
-                   if(this.end) return
-                   this.listenChildChange = true
-                   this.start = false
-                   this.load = true 
                     this.stopScroll()
+                    this.preNode =  this.$refs.scroll_wrap.children.length>1?this.$refs.scroll_wrap.children[1].cloneNode(true) : this.$refs.scroll_wrap.children[0].cloneNode(true)
                     this.dir = scrollDir.down
-                   this.$emit('notice',scrollDir.down)
+                    this.$emit('notice',scrollDir.down)
                }
            }else{
                if(this.isTop()){
-                   this.end = false //是不是要定义两个截止状态，开始/结束
-                   if(this.start) return 
-                   this.start = true
-                   this.listenChildChange = true
-                   this.load = true 
-                   this.stopScroll()
-                   this.dir = scrollDir.up
-                   this.$emit('notice',scrollDir.up)
+                    this.stopScroll()
+                    this.dir = scrollDir.up
+                    this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
+                    this.$emit('notice',scrollDir.up)
                }
            }
            this.preScrollTop = rootScroll.scrollTop
        },
        isBottom(){
            const ele = this.$refs.scroll_wrap
-           if(ele.scrollHeight - ele.scrollTop - ele.clientHeight<=10) return true
+           if(ele.scrollHeight - ele.scrollTop - ele.clientHeight<=1) return true
            return false
        },
        isTop(){
-           if(this.$refs.scroll_wrap.scrollTop<10) return true
+           if(this.$refs.scroll_wrap.scrollTop<1) return true
            return false
        },
        updateChildrenNode(){
-           // eslint-disable-next-line no-debugger
-         this.listenChildChange = false
-         this.end = false
-         this.start = false
-         this.load = false
-        //  this.firstNode =  this.$refs.scroll_wrap.children[1]
-        //  this.secondNode = this.$refs.scroll_wrap.children[0]
-        // let tempInnerHtml = this.$refs.scroll_wrap.children[0].innerHTML
-        // this.$refs.scroll_wrap.children[0].innerHTML = this.$refs.scroll_wrap.children[1].innerHTML
-        // this.$refs.scroll_wrap.children[1].innerHTML = tempInnerHtml
-        // this.firstNode = this.$refs.scroll_wrap.children[0]
-        // this.secondNode = this.$refs.scroll_wrap.children[1]
         // 什么时候去删除子节点，会存在下一次请求的数据长度不够的情况 2020/12/29
-         if(this.$refs.scroll_wrap.children.length>1){
-             if(this.dir === scrollDir.up){
-                 this.preNode = this.$refs.scroll_wrap.children[0]
-             }
-            let index = Array.from(this.$refs.scroll_wrap.children).findIndex(item=> item.innerText.replace(/[\r\n]/g,"") == this.preNode.innerText.replace(/[\r\n]/g,""))
-            if(index === -1) index = 0
-            this.preOffsetheight = this.$refs.scroll_wrap.children[index].offsetHeight
-            this.$refs.scroll_wrap.removeChild(this.$refs.scroll_wrap.children[index])
-            if(this.$refs.scroll_wrap.children[0].offsetHeight < this.$refs.scroll_wrap.clientHeight)
-           {
-                // this.preOffsetheight = 0
-                // this.preScrollTop = 0
-                this.end = true
-           }
-         
+        //insertBefore 插入的元素无法被自然消除
+       if(this.$refs.scroll_wrap.children.length>=2){
+        //需要唯一标志判断 给ul加唯一标志
+        try {
+            const newData = Array.from(this.$refs.scroll_wrap.children).find(item=>{
+              return item.dataset.flag == this.flag
+           }) 
+            if(!newData) throw new Error('some wrong') 
+            this.filterChildNode(this.$refs.scroll_wrap,newData)
+        } catch (error) {
+            console.log(error)
         }
-        if(this.dir === scrollDir.down){
-            let node = this.$refs.scroll_wrap.children[0]
-            this.$refs.scroll_wrap.insertBefore(this.preNode,node) 
-            this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
-            if(!this.end)this.preNode = this.$refs.scroll_wrap.children[1].cloneNode(true)
-        }else if(this.dir === scrollDir.up){
-            this.dir = scrollDir.down
+       }
+        if(this.dir === scrollDir.up){
             this.$refs.scroll_wrap.insertBefore(this.preNode,null)
-            //滑动需要加过渡效果
             this.$refs.scroll_wrap.scrollTop = Math.abs(this.preScrollTop - this.preOffsetheight)
+            this.transtionMove = true
             this.scrollTo(this.$refs.scroll_wrap,0,2000)
-            if(!this.end)this.preNode = this.$refs.scroll_wrap.children[1].cloneNode(true)
-        //      this.sliding = false
-        //    this.listenChildChange = false
-        //    return
+        }else if(this.dir === scrollDir.down){
+            const node  = this.$refs.scroll_wrap.children[0]
+            this.$refs.scroll_wrap.insertBefore(this.preNode,node)
+            this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
         }
-        // this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight
-        // if(!this.end)this.preNode = this.$refs.scroll_wrap.children[1].cloneNode(true)
+       
+        this.dir = scrollDir.down
         this.restartScroll()
        },
         scrollTo(element,to,duration){
-            if(duration<=0) return
+            if(duration<=0) {
+                setTimeout(()=>{
+                    this.transtionMove = false
+                },100)
+                return
+            }
             let difference = to - element.scrollTop
             let perTick = difference/duration*10
             setTimeout(()=>{
                 element.scrollTop += perTick
-                if(element.scrollTop === to) return
+                if(element.scrollTop === to) {
+                    setTimeout(()=>{
+                    this.transtionMove = false
+                },100)
+                    return
+                }
                 this.scrollTo(element,to,duration-10)
             },10)
+        },
+        filterChildNode(parentDom,spectionDom){
+            if(!parentDom) return
+            for(let child of parentDom.children){
+                if(child === spectionDom) continue
+                this.preOffsetheight = child.offsetHeight
+                parentDom.removeChild(child)
+            }
         }
     }
 }

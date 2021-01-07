@@ -2,9 +2,9 @@
   <section class="wrap">
       <header class="header">自动滚动列表</header>
       <section class="bd">
-          <auto-scroll height='300' width='200' @notice='loadData' :flag='moreData'>
-            <ul class="test_scroll">
-                <li v-for="(item) in list" :key="item">{{item}}</li>
+          <auto-scroll height='200' width='130' @notice='loadData' :haveData='moreData' :loading='loading' :flag='page'>
+            <ul class="test_scroll" :data-flag='page'>
+                <li v-for="(item,index) in list" :key="index">{{item}}</li>
             </ul>
           </auto-scroll>
       </section>
@@ -17,18 +17,20 @@ export default {
     components:{autoScroll},
     data(){
         return {
-            list:['北京','长沙','岳阳','上海','深圳','杭州'],
+            list:['1','1','1','1','1','1','1'],
             moreData: false,
+            loading:false,
             firstLoad: true,
             uid:0,
+            page:0,
             cityList:[
-                ['北京','长沙','岳阳','上海','深圳','杭州'],
-                ['常州','苏州','常熟','包头','哈佛','菏泽'],
-                ['汉中','辽阳','梧州','燕塘','百色','毕节'],
-                ['天水','酒泉','安康','白山','伊犁','鸡西'],
-                ['锡林郭勒','阿拉善','通化','六盘水','朝阳','阿坝'],
-                ['张家口','阳江','延安','景德镇','乌木木齐','济南'],
-                ['广州','常德','武汉']
+                ['1','1','1','1','1','1','1'],
+                ['2','2','2','2','2','2','2'],
+                ['3','3','3','3','3','3','3'],
+                ['4','4','4','4','4','4','4'],
+                ['5','5','5','5','5','5','5'],
+                ['6','6','6','6','6','6','6'],
+                ['7','7','7','7']
             ],
             startPage:-1,
             endPage:0
@@ -39,29 +41,45 @@ export default {
     },
     methods:{
         loadData(type){
-            //0 上  1下
+            this.loading = true
+            this.moreData = false 
             if(type === scrollDir.up){
-                if(this.startPage<=0) return
+                if(this.startPage<=0){
+                    this.moreData = false
+                    this.loading = false
+                    return
+                }
+            }
+            if(type === scrollDir.down){
+                if(this.endPage === this.cityList.length-1){
+                    this.moreData = false
+                    this.loading = false
+                    return
+                }
             }
             setTimeout(()=>{
                 this.list = this.getCity(type)
+                this.moreData = true
+                this.loading = false
             },1000)
          },
         delay(){
 
         },
         getCity(type){
-            //0 上  1下
             let result 
+            this.page++
            if(type === scrollDir.down){
                this.endPage++
                this.startPage++
+               
                result = this.cityList[this.endPage%this.cityList.length]
            }else if(type === scrollDir.up){
                 this.endPage = this.endPage-1>0? this.endPage-1 : 0
                 this.startPage = this.startPage-1>-1?this.startPage-1:-1
                result = this.cityList[(this.startPage>0? this.startPage:0)%this.cityList.length]
            }
+           console.log('page',this.page)
            return result
         }
     }
@@ -83,8 +101,11 @@ export default {
        padding: .666667rem;
         .test_scroll{
             li{
+                height: 2rem;
+                line-height: 2rem;
                 text-align: center;
                 background: #F5F5F5;
+                border-bottom: 1px solid;
                 &:nth-child(2n){
                     background: #C0C0C0;
                 }
