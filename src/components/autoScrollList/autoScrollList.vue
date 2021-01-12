@@ -1,6 +1,6 @@
 <template>
   <section class="easy_auto_list" 
-    :style="{height:height+'px',width:width+'px'}" 
+    :style="{height:height,width:width}" 
     @mouseover="mouseoverEvent"
     @mouseleave="mouseleaveEvent" 
     @scroll="scrollEvent"

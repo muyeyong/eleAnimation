@@ -2,7 +2,7 @@
   <section class="wrap">
       <header class="header">自动滚动列表</header>
       <section class="bd">
-          <auto-scroll height='200' width='130' 
+          <auto-scroll height='200px' width='130px' 
           @notice='loadData' 
           :haveData='moreData' 
           :loading='loading' 
