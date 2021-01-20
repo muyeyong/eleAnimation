@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "precommit": "npm run eslint",
-    "prepush": "npm run eslint",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "eslint": "eslint src --ext .js,.vue,.ts",
     "lint": "vue-cli-service lint"
+  },
+  "husky": {
+    "pre-commit": "npm run eslint",
+    "pre-push": "npm run eslint"
   },
   "dependencies": {
     "better-scroll": "^2.0.6",
