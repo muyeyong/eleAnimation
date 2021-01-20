@@ -1,17 +1,22 @@
 <template>
   <section class="wrap">
-    <header class="header">自动滚动列表</header>
+    <header class="header">
+      <h1>自动滚动列表</h1>
+    </header>
     <section class="bd">
       <auto-scroll
         height="200px"
         width="130px"
-        @notice="loadData"
         :haveData="moreData"
+        s
         :loading="loading"
         :flag="page"
+        @notice="loadData"
       >
         <ul class="test_scroll" :data-flag="page">
-          <li v-for="(item, index) in list" :key="index">{{ item }}</li>
+          <li v-for="(item, index) in list" :key="index">
+            {{ item }}
+          </li>
         </ul>
       </auto-scroll>
     </section>
@@ -51,9 +56,7 @@ export default {
       console.log('endPage', value)
     }
   },
-  mounted () {
-
-  },
+  mounted () { },
   methods: {
     loadData (type) {
       this.loading = true
@@ -78,9 +81,7 @@ export default {
         this.loading = false
       }, 1000)
     },
-    delay () {
-
-    },
+    delay () { },
     getCity (type) {
       let result
       this.page++
@@ -92,7 +93,9 @@ export default {
       } else if (type === scrollDir.up) {
         this.endPage = this.endPage - 1 > 0 ? this.endPage - 1 : 0
         this.startPage = this.startPage - 1 > 0 ? this.startPage - 1 : 0
-        result = this.cityList[(this.startPage > 0 ? this.startPage : 0) % this.cityList.length]
+        result = this.cityList[
+          (this.startPage > 0 ? this.startPage : 0) % this.cityList.length
+        ]
       }
       return result
     }
@@ -100,7 +103,7 @@ export default {
 }
 </script>
 
-<style lang='less' scoped>
+<style lang="less" scoped>
 .wrap {
   .header {
     width: 100%;

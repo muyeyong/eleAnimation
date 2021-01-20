@@ -5,12 +5,14 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "eslint": "eslint src --ext .js,.vue,.ts",
+    "test": "eslint src --ext .js,.vue,.ts",
     "lint": "vue-cli-service lint"
   },
   "husky": {
-    "pre-commit": "npm run eslint",
-    "pre-push": "npm run eslint"
+    "hooks": {
+      "pre-commit": "npm run test",
+      "pre-push": "npm run test"
+    }
   },
   "dependencies": {
     "better-scroll": "^2.0.6",

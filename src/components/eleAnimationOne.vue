@@ -53,7 +53,9 @@
           <svg-icon class="buyCar_icon" icon-class="buyCar" />
         </section>
       </section>
-      <section :class="{ pay: true, canPay: totalCount > 0 }">去结算</section>
+      <section :class="{ pay: true, canPay: totalCount > 0 }">
+        <span>广告位招租</span>
+      </section>
     </footer>
     <transition
       v-for="(v, index) in moveDotList"

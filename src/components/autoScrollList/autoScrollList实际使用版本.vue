@@ -18,7 +18,23 @@ export default {
   // 2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
   // or 加一层判断 stopScroll  restartScroll 不直接调用方法
   name: 'AutoScroll',
-  props: ['width', 'height', 'haveData', 'loading', 'flag'],
+  props: {
+    width: {
+      type: String,
+      required: true
+    },
+    height: {
+      type: String,
+      required: true
+    },
+    haveData: Boolean,
+    loading: Boolean,
+    flag: {
+      type: [String, Number],
+      required: true
+    }
+  },
+  emits: ['notice'],
   data () {
     return {
       timeInterval: null,
@@ -138,7 +154,7 @@ export default {
         // 需要唯一标志判断 给ul加唯一标志
         try {
           const newData = Array.from(this.$refs.scroll_wrap.children).find(item => {
-            return item.dataset.flag == this.flag
+            return item.dataset.flag.toString() === this.flag.toString()
           })
           if (!newData) throw new Error('some wrong')
           this.filterChildNode(this.$refs.scroll_wrap)
@@ -189,7 +205,7 @@ export default {
       if (!parentDom) return
       const delectList = []
       for (const child of parentDom.children) {
-        if (child.dataset.flag == this.flag) continue
+        if (child.dataset.flag.toString() === this.flag.toString()) continue
         delectList.push(child)
       }
       delectList.forEach(item => {
