@@ -4,30 +4,38 @@
       <h1>饿了么动画效果演示</h1>
     </header>
     <section class="main">
-      <section class="foodMenu" id="foodMenu" ref="foodMenu">
+      <section id="foodMenu" ref="foodMenu" class="foodMenu">
         <ul>
-          <li v-for="(item,index) in foods" :key="index" :class="index=== activeMenuIndex? 'activeMenu':''" @click="handleMenuClick(index)">
-            {{item.menuName}}
+          <li
+            v-for="(item, index) in foods"
+            :key="index"
+            :class="index === activeMenuIndex ? 'activeMenu' : ''"
+            @click="handleMenuClick(index)"
+          >
+            {{ item.menuName }}
           </li>
         </ul>
       </section>
-      <section class="foodList" id="foodList" ref="foodList">
+      <section id="foodList" ref="foodList" class="foodList">
         <div class="foodList_wrap">
-          <ul v-for="(item,index) in foods" :key="index">
-            <span class="menuName">{{item.menuName}}</span>
-            <li v-for="(food,foodIndex) in item.menuList" :key="foodIndex">
-              {{food.name}}
+          <ul v-for="(item, index) in foods" :key="index">
+            <span class="menuName">{{ item.menuName }}</span>
+            <li v-for="(food, foodIndex) in item.menuList" :key="foodIndex">
+              {{ food.name }}
               <section class="operation">
                 <transition name="showReduce">
-                  <span @click="removeCar(item.menuName,foodIndex)" v-if="food.count">
-                    <svg-icon class="reduce_icon" icon-class="reduce" ></svg-icon>
+                  <span
+                    v-if="food.count"
+                    @click="removeCar(item.menuName, foodIndex)"
+                  >
+                    <svg-icon class="reduce_icon" icon-class="reduce" />
                   </span>
                 </transition>
                 <transition name="fade">
-                  <span v-if="food.count">{{food.count}}</span>
+                  <span v-if="food.count">{{ food.count }}</span>
                 </transition>
-                <span @click="addCar(item.menuName,foodIndex,$event)">
-                    <svg-icon class="add_icon" icon-class="add" ></svg-icon>
+                <span @click="addCar(item.menuName, foodIndex, $event)">
+                  <svg-icon class="add_icon" icon-class="add" />
                 </span>
               </section>
             </li>
@@ -37,38 +45,41 @@
     </section>
     <footer class="footer">
       <section class="car_contain">
-        <section :class="{car_icon: true,moveDone:dotMoveDone}" ref="carContain">
-          <span class="count">{{totalCount}}</span>
-          <svg-icon class="buyCar_icon"  icon-class="buyCar"></svg-icon>
+        <section
+          ref="carContain"
+          :class="{ car_icon: true, moveDone: dotMoveDone }"
+        >
+          <span class="count">{{ totalCount }}</span>
+          <svg-icon class="buyCar_icon" icon-class="buyCar" />
         </section>
       </section>
-      <section :class="{pay:true,canPay:totalCount>0}">去结算</section>
+      <section :class="{ pay: true, canPay: totalCount > 0 }">去结算</section>
     </footer>
     <transition
+      v-for="(v, index) in moveDotList"
+      :key="index"
       appear
       @after-appear="dotAfterEnter"
       @before-appear="dotBeforeEnter"
-      v-for="(v,index) in moveDotList"
-      :key="index"
     >
-      <span class="move_dot" v-if="v">
-        <svg-icon class="add_icon" icon-class="add" ></svg-icon>
+      <span v-if="v" class="move_dot">
+        <svg-icon class="add_icon" icon-class="add" />
       </span>
     </transition>
   </div>
 </template>
 
 <script>
-import {foods} from '../../mockData/index'
-import {findLastLessValue} from '../../tools/array'
-import BScroll from  'better-scroll'
+import BScroll from 'better-scroll'
+import { foods } from '../../mockData/index'
+import { findLastLessValue } from '../../tools/array'
 
 export default {
-  name: 'elem',
-  data(){
+  name: 'Elem',
+  data () {
     return {
-      foods:foods,
-      foodsLisTop: [], //食品大类距离顶部的距离
+      foods,
+      foodsLisTop: [], // 食品大类距离顶部的距离
       foodScroll: null,
       activeMenuIndex: 0,
       moveDotList: [],
@@ -80,154 +91,153 @@ export default {
       menuClickEvent: false
     }
   },
-  mounted(){
-    this.windowHeight = window.innerHeight;
+  mounted () {
+    this.windowHeight = window.innerHeight
     this.getFoodListHeight()
   },
-  methods:{
-    getFoodListHeight(){
-      let foodListContainer = this.$refs.foodList
-      if(foodListContainer){
-        let listArr = Array.from(foodListContainer.children[0].children)
-        listArr.forEach((item,index)=>{
+  methods: {
+    getFoodListHeight () {
+      const foodListContainer = this.$refs.foodList
+      if (foodListContainer) {
+        const listArr = Array.from(foodListContainer.children[0].children)
+        listArr.forEach((item, index) => {
           this.foodsLisTop[index] = item.offsetTop
         })
         this.listenScroll(foodListContainer)
       }
     },
-    listenScroll(element){
-      this.foodScroll = new BScroll(element,{
-          probeType: 3,
-          deceleration: 0.001,
-          bounce: false,
-          swipeTime: 2000,
-          click: true,
+    listenScroll (element) {
+      this.foodScroll = new BScroll(element, {
+        probeType: 3,
+        deceleration: 0.001,
+        bounce: false,
+        swipeTime: 2000,
+        click: true
       })
-      const menuScroll = new BScroll('#foodMenu',{
-        click: true,
+      const menuScroll = new BScroll('#foodMenu', {
+        click: true
       })
       const menuHeight = this.$refs.foodMenu.clientHeight
-      this.foodScroll.on('scroll', pos=>{
-        if(!this.$refs.foodMenu) return
-        const targetIndex = findLastLessValue(this.foodsLisTop,Math.abs(Math.round(pos.y)))
-        if(targetIndex !== -1 && !this.menuClickEvent){
+      this.foodScroll.on('scroll', (pos) => {
+        if (!this.$refs.foodMenu) return
+        const targetIndex = findLastLessValue(this.foodsLisTop, Math.abs(Math.round(pos.y)))
+        if (targetIndex !== -1 && !this.menuClickEvent) {
           this.activeMenuIndex = targetIndex
           const nextMenu = this.$refs.foodMenu.querySelectorAll('.activeMenu')[0]
-          menuScroll.scrollToElement(nextMenu, 800, 0, -(menuHeight/2 - 50))
+          menuScroll.scrollToElement(nextMenu, 800, 0, -(menuHeight / 2 - 50))
         }
       })
     },
-    handleMenuClick(index){
+    handleMenuClick (index) {
       this.menuClickEvent = true
       this.activeMenuIndex = index
-      this.foodScroll.scrollTo(0,-this.foodsLisTop[index],400)
-      this.foodScroll.on("scrollEnd",()=>{
+      this.foodScroll.scrollTo(0, -this.foodsLisTop[index], 400)
+      this.foodScroll.on('scrollEnd', () => {
         this.menuClickEvent = false
       })
     },
-    removeCar(fatherName,childIndex){
-      let target = this.foods.find(item => item.menuName ===  fatherName)
-      if(target){
-        let count = target.menuList[childIndex].count
-        this.totalCount = this.totalCount>0? this.totalCount - 1 : 0
-        target.menuList[childIndex].count = count>0 ? count-1 : 0
+    removeCar (fatherName, childIndex) {
+      const target = this.foods.find((item) => item.menuName === fatherName)
+      if (target) {
+        const { count } = target.menuList[childIndex]
+        this.totalCount = this.totalCount > 0 ? this.totalCount - 1 : 0
+        target.menuList[childIndex].count = count > 0 ? count - 1 : 0
       }
     },
-    addCar(fatherName,childIndex,event){
-      let target = this.foods.find(item => item.menuName ===  fatherName)
-      if(target){
+    addCar (fatherName, childIndex, event) {
+      const target = this.foods.find((item) => item.menuName === fatherName)
+      if (target) {
         this.totalCount += 1
         this.elLeft = event.target.getBoundingClientRect().left
         this.elBottom = event.target.getBoundingClientRect().bottom
         this.moveDotList.push(true)
-        let count = target.menuList[childIndex].count
+        const { count } = target.menuList[childIndex]
         target.menuList[childIndex].count = count + 1
       }
     },
-    listenInCart(){
-      if(!this.dotMoveDone){
+    listenInCart () {
+      if (!this.dotMoveDone) {
         this.dotMoveDone = true
-        this.$refs.carContain.addEventListener('animationend',()=>{
+        this.$refs.carContain.addEventListener('animationend', () => {
           this.dotMoveDone = false
         })
-        this.$refs.carContain.addEventListener('webkitAnimationend',()=>{
+        this.$refs.carContain.addEventListener('webkitAnimationend', () => {
           this.dotMoveDone = false
         })
-
       }
     },
-    dotAfterEnter(el){
-      el.style.transform = `translate3d(0,0,0)`;
-      el.children[0].style.transform = `translate3d(0,0,0)`;
-      el.style.transition = 'transform .55s cubic-bezier(0.3, -0.25, 0.7, -0.15)';
-      el.children[0].style.transition = 'transform .55s linear';
+    dotAfterEnter (el) {
+      el.style.transform = 'translate3d(0,0,0)'
+      el.children[0].style.transform = 'translate3d(0,0,0)'
+      el.style.transition = 'transform .55s cubic-bezier(0.3, -0.25, 0.7, -0.15)'
+      el.children[0].style.transition = 'transform .55s linear'
       // eslint-disable-next-line no-unused-vars
-      this.moveDotList = this.moveDotList.map(item => false);
-      el.children[0].style.opacity = 1;
+      this.moveDotList = this.moveDotList.map((item) => false)
+      el.children[0].style.opacity = 1
       el.children[0].addEventListener('transitionend', () => {
-          this.listenInCart();
+        this.listenInCart()
       })
       el.children[0].addEventListener('webkitAnimationEnd', () => {
-          this.listenInCart();
+        this.listenInCart()
       })
     },
-    dotBeforeEnter(el){
-       el.style.transform = `translate3d(0,${37 + this.elBottom - this.windowHeight}px,0)`;
-       el.children[0].style.transform = `translate3d(${this.elLeft - 30}px,0,0)`;
-       el.children[0].style.opacity = 0;
+    dotBeforeEnter (el) {
+      el.style.transform = `translate3d(0,${37 + this.elBottom - this.windowHeight}px,0)`
+      el.children[0].style.transform = `translate3d(${this.elLeft - 30}px,0,0)`
+      el.children[0].style.opacity = 0
     }
   }
 }
 </script>
 
 <style lang='less' scoped >
-*{
+* {
   padding: 0;
   margin: 0;
 }
-li{
+li {
   list-style: none;
 }
 @keyframes carScale {
-  0%{
+  0% {
     transform: scale(1);
   }
-  25%{
+  25% {
     transform: scale(0.75);
   }
-  50%{
+  50% {
     transform: scale(1.1);
   }
-  75%{
+  75% {
     transform: scale(0.9);
   }
-  100%{
+  100% {
     transform: scale(1);
   }
 }
 @-webkit-keyframes carScale {
-  0%{
+  0% {
     transform: scale(1);
   }
-  25%{
+  25% {
     transform: scale(0.75);
   }
-  50%{
+  50% {
     transform: scale(1.1);
   }
-  75%{
+  75% {
     transform: scale(0.9);
   }
-  100%{
+  100% {
     transform: scale(1);
   }
 }
-.wrap{
+.wrap {
   background: #529bda;
-  .header{
+  .header {
     position: static;
     top: 0;
-    h1{
+    h1 {
       width: 100%;
       height: 1.066667rem;
       line-height: 1.066667rem;
@@ -235,7 +245,7 @@ li{
       text-align: center;
     }
   }
-  .main{
+  .main {
     position: absolute;
     top: 1.333333rem;
     bottom: 1.333333rem;
@@ -244,17 +254,17 @@ li{
     width: 100%;
     max-width: 10rem;
     min-width: 4.266667rem;
-    .foodMenu{
+    .foodMenu {
       flex: 2;
       overflow: auto;
       overflow-x: hidden;
       background: #f2f4f6;
-      ul{
-        li{
+      ul {
+        li {
           width: 100%;
-          height:1.333333rem;
+          height: 1.333333rem;
           line-height: 1.333333rem;
-          border-bottom: 0.013333rem solid #ccc ;
+          border-bottom: 0.013333rem solid #ccc;
           text-align: left;
           font-size: 0.466667rem;
           overflow: hidden;
@@ -262,18 +272,18 @@ li{
           text-overflow: ellipsis;
           padding-left: 0.133333rem;
         }
-        .activeMenu{
-          border-left: .106667rem solid #529bda;
+        .activeMenu {
+          border-left: 0.106667rem solid #529bda;
         }
       }
     }
-    .foodList{
+    .foodList {
       flex: 6;
       overflow: auto;
       overflow-x: hidden;
       background: #fff;
-      ul{
-        .menuName{
+      ul {
+        .menuName {
           display: block;
           width: 100%;
           height: 1rem;
@@ -281,14 +291,14 @@ li{
           line-height: 1rem;
           font-size: 0.533333rem;
         }
-        li{
+        li {
           position: relative;
           height: 1.2rem;
           line-height: 1.2rem;
           font-size: 0.666667rem;
           margin: 0 0.4rem;
           border-bottom: 0.013333rem solid #ccc;
-          .operation{
+          .operation {
             position: absolute;
             top: 0;
             right: 0;
@@ -297,84 +307,86 @@ li{
             justify-content: flex-end;
             width: 2rem;
             align-items: center;
-            }
           }
         }
       }
     }
   }
-  .footer{
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+}
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 1.333333rem;
+  background: rgb(61, 61, 63);
+  max-width: 10rem;
+  min-width: 4.266667rem;
+  .moveDone {
+    animation: carScale 0.5s ease-in-out;
+  }
+  .car_contain {
+    position: relative;
+    float: left;
+    width: 70%;
+    height: 100%;
+    .car_icon {
+      display: flex;
+      width: 0.933333rem;
+      height: 0.933333rem;
+      .count {
+        position: absolute;
+        top: 0;
+        left: 0.566667rem;
+        display: block;
+        width: 0.5rem;
+        height: 0.5rem;
+        text-align: center;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 0.4rem;
+        background: #ec5728;
+      }
+    }
+  }
+  .pay {
+    float: right;
+    width: 30%;
     height: 1.333333rem;
-    background: rgb(61, 61, 63);
-    max-width: 10rem;
-    min-width: 4.266667rem;
-    .moveDone{
-      animation: carScale 0.5s ease-in-out;
-    }
-    .car_contain{
-      position: relative;
-      float: left;
-      width: 70%;
-      height: 100%;
-      .car_icon{
-        display: flex;
-        width: .933333rem;
-        height: .933333rem;
-         .count{
-          position: absolute;
-          top: 0;
-          left: 0.566667rem;
-          display: block;
-          width: 0.5rem;
-          height: 0.5rem;
-          text-align: center;
-          border-radius: 50%;
-          color: #fff;
-          font-size: 0.4rem;
-          background: #ec5728;
-        }
-      }
-     
-    }
-    .pay{
-      float: right;
-      width: 30%;
-      height: 1.333333rem;
-      text-align: center;
-      line-height: 1.333333rem;
-      font-size: 0.666667rem;
-      color: #fff;
-      background: #535356;
-    }
-    .canPay{
-        background:#529bda;
-      }
+    text-align: center;
+    line-height: 1.333333rem;
+    font-size: 0.666667rem;
+    color: #fff;
+    background: #535356;
   }
-  .move_dot{
-        position: fixed;
-        bottom: 30px;
-        left: 30px;
-        .add_icon{
-          width: .266667rem;
-          height: .266667rem;
-        }
+  .canPay {
+    background: #529bda;
   }
-
-.showReduce-enter-active, .showReduce-leave-active {
-        transition: all .3s ease-out;
-    }
-.showReduce-enter, .showReduce-leave-active {
-    opacity: 0;
-    transform: translateX(1rem);
 }
-.fade-enter-active, .fade-leave-active {
-    transition: all .3s;
-}
-.fade-enter, .fade-leave-active {
-    opacity: 0;
+.move_dot {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  .add_icon {
+    width: 0.266667rem;
+    height: 0.266667rem;
+  }
 }
 
+.showReduce-enter-active,
+.showReduce-leave-active {
+  transition: all 0.3s ease-out;
+}
+.showReduce-enter,
+.showReduce-leave-active {
+  opacity: 0;
+  transform: translateX(1rem);
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s;
+}
+.fade-enter,
+.fade-leave-active {
+  opacity: 0;
+}
 </style>

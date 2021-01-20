@@ -1,23 +1,23 @@
 <template>
   <section
+    ref="scroll_wrap"
     :style="{ height: height, width: width }"
     :class="['easy_auto_list']"
     @mouseover="mouseoverEvent"
     @mouseleave="mouseleaveEvent"
     @scroll="scrollEvent"
-    ref="scroll_wrap"
   >
-    <slot></slot>
+    <slot />
   </section>
 </template>
 
 <script>
 import { scrollDir } from './config'
 export default {
-  //需要注意的点：更新的数据的位置 上滑后需要改变状态 
-  //2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
+  // 需要注意的点：更新的数据的位置 上滑后需要改变状态
+  // 2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
   // or 加一层判断 stopScroll  restartScroll 不直接调用方法
-  name: 'autoScroll',
+  name: 'AutoScroll',
   props: ['width', 'height', 'haveData', 'loading', 'flag'],
   data () {
     return {
@@ -26,13 +26,16 @@ export default {
       preNode: null,
       preScrollTop: 0,
       preOffsetheight: 0,
-      dir: 1,//0上 1下
+      dir: 1, // 0上 1下
       sliding: false,
       transtionMove: false,
       canRequest: true,
       firstLoad: true,
       maxScrollTop: 0
     }
+  },
+  computed: {
+
   },
   watch: {
     haveData: {
@@ -48,9 +51,6 @@ export default {
       },
       deep: true
     }
-  },
-  computed: {
-
   },
   mounted () {
     this.init()
@@ -83,19 +83,19 @@ export default {
       this.dir = scrollDir.down
       this.timeInterval && clearInterval(this.timeInterval)
       this.timeInterval = setInterval(() => {
-        //重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
+        // 重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
         this.autoScroll()
       }, 15)
     },
-    //判断滑动方向，是否到底/顶
-    // 什么时候可以自己控制 
+    // 判断滑动方向，是否到底/顶
+    // 什么时候可以自己控制
     scrollEvent (e) {
       const rootScroll = this.$refs.scroll_wrap
       if (!this.sliding || this.transtionMove || !this.canRequest) {
         e.preventDefault()
         return false
       }
-      //2020/1/11 存在三个ul的情况需要处理
+      // 2020/1/11 存在三个ul的情况需要处理
       if (this.isBottom()) {
         const domLen = this.$refs.scroll_wrap.children.length
         this.stopScroll()
@@ -133,9 +133,9 @@ export default {
         return
       }
       // 什么时候去删除子节点，会存在下一次请求的数据长度不够的情况 2020/12/29
-      //insertBefore 插入的元素无法被自然消除
+      // insertBefore 插入的元素无法被自然消除
       if (this.$refs.scroll_wrap.children.length >= 2) {
-        //需要唯一标志判断 给ul加唯一标志
+        // 需要唯一标志判断 给ul加唯一标志
         try {
           const newData = Array.from(this.$refs.scroll_wrap.children).find(item => {
             return item.dataset.flag == this.flag
@@ -158,7 +158,7 @@ export default {
           this.$refs.scroll_wrap.insertBefore(this.spectionNode, this.$refs.scroll_wrap.children[0])
           this.spectionNode = null
         }
-        //2020/1/8 scrollTop还需要确认
+        // 2020/1/8 scrollTop还需要确认
         this.$refs.scroll_wrap.scrollTop = this.preScrollTop - this.preOffsetheight > 0 ? this.preScrollTop - this.preOffsetheight : this.preScrollTop
       }
       this.dir = scrollDir.down
@@ -172,8 +172,8 @@ export default {
         }, 100)
         return
       }
-      let difference = to - element.scrollTop
-      let perTick = difference / duration * 10
+      const difference = to - element.scrollTop
+      const perTick = difference / duration * 10
       setTimeout(() => {
         element.scrollTop += perTick
         if (element.scrollTop === to) {
@@ -185,10 +185,10 @@ export default {
         this.scrollTo(element, to, duration - 10)
       }, 10)
     },
-    filterChildNode (parentDom) { //记录offsetHeight 根据上、下滑动
+    filterChildNode (parentDom) { // 记录offsetHeight 根据上、下滑动
       if (!parentDom) return
-      let delectList = []
-      for (let child of parentDom.children) {
+      const delectList = []
+      for (const child of parentDom.children) {
         if (child.dataset.flag == this.flag) continue
         delectList.push(child)
       }

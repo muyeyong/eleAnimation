@@ -1,23 +1,24 @@
 <template>
   <section
+    ref="scroll_wrap"
     class="easy_auto_list"
     :style="{ height: height, width: width }"
     @mouseover="mouseoverEvent"
     @mouseleave="mouseleaveEvent"
     @scroll="scrollEvent"
-    ref="scroll_wrap"
   >
-    <slot></slot>
+    <slot />
   </section>
 </template>
 
 <script>
 import { scrollDir } from './config'
+
 export default {
-  //需要注意的点：更新的数据的位置 上滑后需要改变状态 
-  //2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
+  // 需要注意的点：更新的数据的位置 上滑后需要改变状态
+  // 2021/1/7 滑动的时候，移开鼠标会触发restart事件，不应该，解决办法：移除鼠标监听事事件，等数据加载完在重新监听
   // or 加一层判断 stopScroll  restartScroll 不直接调用方法
-  name: 'autoScroll',
+  name: 'AutoScroll',
   props: ['width', 'height', 'haveData', 'loading', 'flag'],
   data () {
     return {
@@ -27,8 +28,8 @@ export default {
       preNode: null,
       preScrollTop: 0,
       preOffsetheight: 0,
-      dir: 1,//0上 1下
-      listenChildChange: false,//判断是否监听childrenDom变化
+      dir: 1, // 0上 1下
+      listenChildChange: false, // 判断是否监听childrenDom变化
       end: false,
       start: false,
       sliding: false,
@@ -38,26 +39,24 @@ export default {
   },
   watch: {
     haveData: {
-      handler: function (newVal) {
+      handler (newVal) {
         if (newVal) {
           this.$nextTick(() => {
             this.canRequest = true
             this.updateChildrenNode()
           })
-        } else {
-          if (!this.loading) this.canRequest = true
-        }
+        } else if (!this.loading) this.canRequest = true
       },
       deep: true
     },
     loading: {
-      handler: function (newVal) {
+      handler (newVal) {
         if (!newVal) {
           // this.canRequest = true
         }
       },
       deep: true
-    },
+    }
 
   },
   mounted () {
@@ -91,11 +90,11 @@ export default {
       this.dir = scrollDir.down
       this.timeInterval && clearInterval(this.timeInterval)
       this.timeInterval = setInterval(() => {
-        //重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
+        // 重启 secondNode firstNode的scrollTop scrollHeight需要考虑 2020/12/28
         this.autoScroll()
       }, 15)
     },
-    //判断滑动方向，是否到底/顶
+    // 判断滑动方向，是否到底/顶
     scrollEvent () {
       const rootScroll = this.$refs.scroll_wrap
       if (!this.sliding || this.transtionMove || !this.canRequest) return
@@ -107,14 +106,12 @@ export default {
           this.canRequest = false
           this.$emit('notice', scrollDir.down)
         }
-      } else {
-        if (this.isTop()) {
-          this.stopScroll()
-          this.dir = scrollDir.up
-          this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
-          this.canRequest = false
-          this.$emit('notice', scrollDir.up)
-        }
+      } else if (this.isTop()) {
+        this.stopScroll()
+        this.dir = scrollDir.up
+        this.preNode = this.$refs.scroll_wrap.children[0].cloneNode(true)
+        this.canRequest = false
+        this.$emit('notice', scrollDir.up)
       }
       this.preScrollTop = rootScroll.scrollTop
     },
@@ -129,13 +126,11 @@ export default {
     },
     updateChildrenNode () {
       // 什么时候去删除子节点，会存在下一次请求的数据长度不够的情况 2020/12/29
-      //insertBefore 插入的元素无法被自然消除
+      // insertBefore 插入的元素无法被自然消除
       if (this.$refs.scroll_wrap.children.length >= 2) {
-        //需要唯一标志判断 给ul加唯一标志
+        // 需要唯一标志判断 给ul加唯一标志
         try {
-          const newData = Array.from(this.$refs.scroll_wrap.children).find(item => {
-            return item.dataset.flag == this.flag
-          })
+          const newData = Array.from(this.$refs.scroll_wrap.children).find((item) => item.dataset.flag == this.flag)
           if (!newData) throw new Error('some wrong')
           this.filterChildNode(this.$refs.scroll_wrap, newData)
         } catch (error) {
@@ -163,8 +158,8 @@ export default {
         }, 100)
         return
       }
-      let difference = to - element.scrollTop
-      let perTick = difference / duration * 10
+      const difference = to - element.scrollTop
+      const perTick = difference / duration * 10
       setTimeout(() => {
         element.scrollTop += perTick
         if (element.scrollTop === to) {
@@ -178,14 +173,11 @@ export default {
     },
     filterChildNode (parentDom, spectionDom) {
       if (!parentDom) return
-      for (let child of parentDom.children) {
+      for (const child of parentDom.children) {
         if (child === spectionDom) continue
         this.preOffsetheight = child.offsetHeight
         parentDom.removeChild(child)
       }
-    },
-    domUpdateDone () {
-      console.log('dom更新完毕了')
     },
     mouseoverEvent () {
       if (!this.canRequest) return
