@@ -6,7 +6,7 @@ export default [{
   path: '/',
   component: App,
   children: [
-    // 饿了么动画
+    // 饿了么动画s
     {
       path: '',
       redirect: '/home'

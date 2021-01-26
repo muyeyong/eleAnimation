@@ -1,6 +1,6 @@
 const path = require('path')
 
-function resolve(dir) {
+function resolve (dir) {
   return path.join(__dirname, './', dir)
 }
 
@@ -23,7 +23,7 @@ module.exports = {
       .use('svg-sprite-loader')
       .loader('svg-sprite-loader')
       .options({
-        symbolId: 'icon-[name]',
+        symbolId: 'icon-[name]'
       })
 
     // 修改images loader 添加svg处理
@@ -39,12 +39,12 @@ module.exports = {
       // https: true,
       proxy: {
         '/user': {
-          target: 'https://devadminschool.icourt.cc',
+          target: 'https://devadminschool.icourt.cc'
         },
         '/live': {
-          target: 'https://devadminschool.icourt.cc',
-        },
-      },
-    },
-  },
+          target: 'https://devadminschool.icourt.cc'
+        }
+      }
+    }
+  }
 }
