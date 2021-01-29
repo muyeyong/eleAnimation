@@ -4,6 +4,7 @@ function resolve (dir) {
   return path.join(__dirname, './', dir)
 }
 
+const port = 8989
 module.exports = {
   chainWebpack: config => {
     config.plugin('define').tap(args => {
@@ -35,16 +36,26 @@ module.exports = {
   },
   configureWebpack: {
     devServer: {
-      open: true,
+      open: true
       // https: true,
-      proxy: {
-        '/user': {
-          target: 'https://devadminschool.icourt.cc'
-        },
-        '/live': {
-          target: 'https://devadminschool.icourt.cc'
-        }
-      }
+    },
+    output: {
+      // 把子应用打包成 umd 库格式
+      library: 'subApp',
+      libraryTarget: 'umd'
+    }
+  },
+  devServer: {
+    // host: '0.0.0.0',
+    hot: true,
+    disableHostCheck: true,
+    port,
+    overlay: {
+      warnings: false,
+      errors: true
+    },
+    headers: {
+      'Access-Control-Allow-Origin': '*'
     }
   }
 }
